@@ -8,6 +8,7 @@
 
 #include "Config.h"
 #include "Device.h"
+#include "Data.h"
 #include "Game.h"
 #include "Exceptions.h"
 
@@ -25,10 +26,13 @@ Game::Game()
 #ifndef __APPLE__
    //this->initSDL_Mixer();
 #endif
-   this->pauseStr = "";
 
    this->player   = new Player();
-   this->monsters = new MonsterManager();
+   this->level = 1;
+
+   // UI
+   for (int i=0; i<SDL_MAX_KEY; i++)
+      this->key[i] = 0;
 }
 
 Game::~Game()
@@ -92,14 +96,16 @@ void Game::initSDL_Mixer()
 void Game::display()
 {
    SDL_Rect rect;
+   int i;
 
+   // clear screen
    SDL_SetRenderDrawColor(this->renderer,
                           0, 0, 0,
                           SDL_ALPHA_OPAQUE);
    SDL_RenderClear(this->renderer);
 
-   // ...
-   // debug : draw arena
+   // draw arena
+   /*
    SDL_SetRenderDrawColor(this->renderer,
                           123, 123, 123,
                           SDL_ALPHA_OPAQUE);
@@ -108,17 +114,38 @@ void Game::display()
    rect.h = PIXEL_SIZE * ARENA_SIZE_H;
    rect.w = PIXEL_SIZE * ARENA_SIZE_W;
    SDL_RenderDrawRect(this->renderer, &rect);
+   */
 
-   // display monsters
+   // Draw bottom line
+   SDL_SetRenderDrawColor(this->renderer,
+                          0, 200, 0,
+                          SDL_ALPHA_OPAQUE);
+   rect.x = ARENA_X;
+   rect.y = ARENA_BOTTOM;
+   rect.h = PIXEL_SIZE;
+   rect.w = PIXEL_SIZE * ARENA_SIZE_W;
+   SDL_RenderFillRect(this->renderer, &rect);
+
+   // draw monsters
+   int tileType = this->monsters->getTileType();
    for (auto &m : this->monsters->getMonsters())
    {
-      this->drawMonster(m);
+      this->drawMonster(m, tileType);
    }
 
-   // dislpay player
-   this->drawPlayer();
+   // draw player
+   this->drawPlayer(this->player->getRect());
 
-   // display bullet
+   // draw lives
+   for (i=0; i<this->player->getLives(); i++)
+   {
+      rect = this->player->getRect();
+      rect.x = BASE_SIZE * i + 42;
+      rect.y = ARENA_SIZE_H + 2;
+      this->drawPlayer(rect);
+   }
+
+   // draw bullet
    this->drawBullet();
 
    // display scores
@@ -132,14 +159,23 @@ void Game::displayScore()
    ostringstream text;
 
    text.str("");
-   text << "score : " << "11";
-   this->displayText(text.str(), 1, 1);
+   text << "Score " << this->player->getScore();
+   this->displayText(text.str(), ARENA_X, 10);
+
+   text.str("");
+   text << "Lives ";
+   this->displayText(text.str(), ARENA_X, ARENA_BOTTOM+10);
+
+   text.str("");
+   text << "Level " << this->level;
+   this->displayText(text.str(), ARENA_RIGHT-150, ARENA_BOTTOM+10);
+
 
    if (this->pauseStr.size() > 1)
    {
       text.str("");
       text << this->pauseStr;
-      this->displayText(text.str(), 1, 1);
+      this->displayText(text.str(), ARENA_X+PIXEL_SIZE*ARENA_SIZE_W/3, ARENA_Y+PIXEL_SIZE*ARENA_SIZE_H*2/3);
    }
 }
 
@@ -163,34 +199,78 @@ void Game::displayText(string str, int x, int y)
    SDL_DestroyTexture(texture);
 }
 
-void Game::drawMonster(Monster * monster)
+void Game::drawMonster(Monster * monster, int tileType)
 {
    SDL_Rect destRect;
+   SDL_Rect mRect = monster->getRect();
 
-   destRect.x = ARENA_X + PIXEL_SIZE * (monster->getRect().x);
-   destRect.y = ARENA_Y + PIXEL_SIZE * (monster->getRect().y);
-   destRect.w = PIXEL_SIZE * (monster->getRect().w);
-   destRect.h = PIXEL_SIZE * (monster->getRect().h);
+   // draw hitbox
+   /*
+   destRect.x = ARENA_X + PIXEL_SIZE * (mRect.x);
+   destRect.y = ARENA_Y + PIXEL_SIZE * (mRect.y);
+   destRect.w = PIXEL_SIZE * (mRect.w);
+   destRect.h = PIXEL_SIZE * (mRect.h);
 
    SDL_SetRenderDrawColor(this->renderer,
-                          123, 123, 123,
+                          42, 42, 42,
                           SDL_ALPHA_OPAQUE);
    SDL_RenderFillRect(this->renderer, &destRect);
+   */
+
+   // draw mob
+
+   char * c;
+   int i = 0;
+   for (c=monster->getTile(tileType); *c!='\0'; c++)
+   {
+      SDL_SetRenderDrawColor(this->renderer,
+                             (*c=='r'?255:0),
+                             (*c=='g'?255:0),
+                             (*c=='b'?255:0),
+                             SDL_ALPHA_OPAQUE);
+      destRect.x = ARENA_X + PIXEL_SIZE * (mRect.x + (int)i%MONSTER_SIZE_W);
+      destRect.y = ARENA_Y + PIXEL_SIZE * (mRect.y + (int)i/MONSTER_SIZE_W);
+      destRect.w = PIXEL_SIZE;
+      destRect.h = PIXEL_SIZE;
+      SDL_RenderFillRect(this->renderer, &destRect);
+      i++;
+   }
 }
 
-void Game::drawPlayer()
+void Game::drawPlayer(SDL_Rect playerRect)
 {
    SDL_Rect destRect;
 
-   destRect.x = ARENA_X + PIXEL_SIZE * (this->player->getRect().x);
-   destRect.y = ARENA_Y + PIXEL_SIZE * (this->player->getRect().y);
-   destRect.w = PIXEL_SIZE * (this->player->getRect().w);
-   destRect.h = PIXEL_SIZE * (this->player->getRect().h);
+   // draw hitbox
+   /*
+   destRect.x = ARENA_X + PIXEL_SIZE * (playerRect.x);
+   destRect.y = ARENA_Y + PIXEL_SIZE * (playerRect.y);
+   destRect.w = PIXEL_SIZE * (playerRect.w);
+   destRect.h = PIXEL_SIZE * (playerRect.h);
 
    SDL_SetRenderDrawColor(this->renderer,
                           123, 123, 123,
                           SDL_ALPHA_OPAQUE);
    SDL_RenderFillRect(this->renderer, &destRect);
+   */
+
+   char * c;
+   char tile[] = PLAYER_TILE;
+   int i = 0;
+   for (c=tile; *c!='\0'; c++)
+   {
+      SDL_SetRenderDrawColor(this->renderer,
+                             (*c=='r'?255:0),
+                             (*c=='g'?255:0),
+                             (*c=='b'?255:0),
+                             SDL_ALPHA_OPAQUE);
+      destRect.x = ARENA_X + PIXEL_SIZE * (playerRect.x + (int)i%MONSTER_SIZE_W);
+      destRect.y = ARENA_Y + PIXEL_SIZE * (playerRect.y + (int)i/MONSTER_SIZE_W);
+      destRect.w = PIXEL_SIZE;
+      destRect.h = PIXEL_SIZE;
+      SDL_RenderFillRect(this->renderer, &destRect);
+      i++;
+   }
 }
 
 void Game::drawBullet()
@@ -211,172 +291,120 @@ void Game::drawBullet()
    SDL_RenderFillRect(this->renderer, &destRect);
 }
 
-
 int Game::play()
 {
    int action;
-   int p;
+   bool killed = false;
+   bool start  = false;
+
+   unsigned int tic = 0;
+   unsigned int tac = 0;
+   int speed;
 
    // init pause
-   p = this->actionPause(string("Press Enter to begin"));
-   if (p == ACTION_QUIT) return ACTION_QUIT;
+   this->pauseStr = string("Press space to begin");
+   this->pauseGame = 2;
 
-   unsigned int tic = SDL_GetTicks();
-   unsigned int tac = 0;
+
+   // init game
+   /*
+   while (this->pauseGame > 0)
+   {
+      this->UIHandleAction();
+   }
+   */
 
    while (this->player->isAlive())
    {
-      // Get player's action
-      action = this->getAction();
-
-      // Quit game
-      if (action == ACTION_QUIT) return ACTION_QUIT;
-
-      this->player->play(action);
-
-      tac = SDL_GetTicks();
-      if (tac - tic > (unsigned int)(BASE_SPEED * this->monsters->getMonstersCount()))
+      if (!killed)
       {
-         if (this->monsters->play())
+         // new level
+         this->monsters = new MonsterManager();
+      }
+      else
+      {
+         this->monsters->resetMonsters();
+      }
+
+      // init player
+      this->player->init();
+      killed = false;
+      start  = false;
+
+      tic = SDL_GetTicks();
+      while (!killed && this->monsters->getMonstersCount() > 0)
+      {
+         // Get player's action
+         action = this->UIHandleAction();
+
+         // Quit game
+         if (action == ACTION_QUIT)
+            return ACTION_QUIT;
+
+         // Pause game
+         if (this->pauseGame == 0)
          {
-            this->player->kill();
+
+            if (this->key[KEY_UP])
+               this->player->play(ACTION_MOVE_UP);
+            else if (this->key[KEY_DOWN])
+               this->player->play(ACTION_MOVE_DOWN);
+            if (this->key[KEY_LEFT])
+               this->player->play(ACTION_MOVE_LEFT);
+            else if (this->key[KEY_RIGHT])
+               this->player->play(ACTION_MOVE_RIGHT);
+
+            if (this->key[KEY_SPACE])
+            {
+               this->player->play(ACTION_SHOT);
+               start = true;
+            }
+
+            this->player->play(ACTION_BULLET);
+
+            tac = SDL_GetTicks();
+
+            speed = (start) ? (BASE_SPEED * this->monsters->getMonstersCount())
+                            : (BASE_SPEED * NB_MONSTERS_W * NB_MONSTERS_H);
+            if (tac - tic > (unsigned int)speed)
+            {
+               // move monsters
+               if (this->monsters->play())
+               {
+                  // a monster reached the floor
+                  this->player->kill();
+                  killed = true;
+               }
+               tic = SDL_GetTicks();
+            }
+
+            // Check if a monster killed the player
+            if (this->monsters->playerImpact(this->player->getpRect()))
+            {
+               this->player->kill();
+               killed = true;
+            }
+
+            // check if the bullet killed a monster
+            if (this->player->hasBullet()
+             && this->monsters->bulletImpact(this->player->getBulletpRect()))
+            {
+               this->player->bulletHitTarget(MONSTER_SCORE * level);
+            }
          }
-         tic = SDL_GetTicks();
-      }
+         this->display();
+         SDL_Delay(10);
 
-      // check impacts
-      if (this->monsters->playerImpact(this->player->getpRect()))
-      {
-         this->player->kill();
-      }
+      } // end level
+      if (!killed) this->level++;
+   } // game over
 
-      // check impacts
-      if (this->player->hasBullet()
-       && this->monsters->bulletImpact(this->player->getBulletpRect()))
-      {
-         this->player->bulletHitTarget();
-      }
-
-      this->display();
-      SDL_Delay(10);
-   }
    /* GAME OVER */
-   p = this->actionPause(string("GAME OVER"));
-   return ACTION_QUIT;
-}
-
-int Game::getAction()
-{
-   int ret = ACTION_NONE;
-   SDL_Event event;
-
-   if (SDL_PollEvent(&event))
-   {
-      switch(event.type)
-      {
-         case SDL_WINDOWEVENT:
-            // Set pause on focus lost
-            if (event.window.event == SDL_WINDOWEVENT_FOCUS_LOST)
-            {
-               ret = this->actionPause(string("Pause..."));
-            }
-            break;
-         case SDL_QUIT:
-            ret = ACTION_QUIT;
-            break;
-         case SDL_KEYDOWN:
-            switch(event.key.keysym.sym)
-            {
-               case SDLK_ESCAPE:
-                  ret = this->actionPause(string("Pause..."));
-                  break;
-               case SDLK_m:
-                  /* music */
-                  ret = ACTION_NONE;
-                  break;
-               case SDLK_p:
-               case SDLK_LALT:
-                  ret = this->actionPause(string("Pause..."));
-                  break;
-               case SDLK_UP:
-                  ret = ACTION_MOVE_UP;
-                  break;
-               case SDLK_DOWN:
-                  ret = ACTION_MOVE_DOWN;
-                  break;
-               case SDLK_RIGHT:
-                  ret = ACTION_MOVE_RIGHT;
-                  break;
-               case SDLK_LEFT:
-                  ret = ACTION_MOVE_LEFT;
-                  break;
-               case SDLK_SPACE:
-                  ret = ACTION_SHOT;
-                  break;
-               default:
-                  ret = ACTION_NONE;
-                  break;
-
-            }
-            break;
-      }
-   }
-   return ret;
-}
-
-int Game::actionPause(string str)
-{
-   int action = ACTION_NONE;
-   SDL_Event event;
-
-   this->pauseStr = str;
+   //this->actionPause(string("GAME OVER"));
+   this->pauseStr = string("GAME OVER");
    this->display();
-
-   // purge events in queue
-   while(SDL_PollEvent(&event));
-
-   // wait for end pause or quit
-   while(action == ACTION_NONE)
-   {
-      SDL_WaitEvent(&event);
-      switch(event.type)
-      {
-         case SDL_QUIT:
-            action = ACTION_QUIT;
-            break;
-         case SDL_KEYDOWN:
-            switch(event.key.keysym.sym)
-            {
-               case SDLK_ESCAPE:
-                  action = ACTION_QUIT;
-                  break;
-               case SDLK_p:
-               case SDLK_RETURN:
-                  action = ACTION_PAUSE;
-                  break;
-               case SDLK_m:
-                  /* music */
-                  action = ACTION_NONE;
-                  break;
-               default:
-                  action = ACTION_NONE;
-                  break;
-            }
-            break;
-      }
-      this->display();
-      SDL_Delay(50);
-   }
-   this->pauseStr = "";
-   return action;
+   return ACTION_OVER;
 }
 
-/********************************
-	accessors
-********************************/
 
 
-
-/********************************
-	end accessors
-********************************/

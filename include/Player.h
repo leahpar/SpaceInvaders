@@ -12,28 +12,33 @@ class Player
 
       Player();
       ~Player();
+      void init();
 
       int play(int action);
       bool isAlive();
+      int getLives();
       void kill();
 
       SDL_Rect& getRect();
       SDL_Rect* getpRect();
 
       SDL_Rect* getBulletpRect();
-      void bulletHitTarget();
+      void bulletHitTarget(int score);
       void destroyBullet();
 
       bool hasBullet();
-
+      int getScore();
 
    protected:
 
    private:
       SDL_Rect rect;
-      bool alive;
+      int lives;
+      int score;
 
       Bullet * bullet;
+
+
 
 
 

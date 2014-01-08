@@ -32,13 +32,16 @@ int main(int argc, char **argv)
          switch(event.type)
          {
             case SDL_QUIT:
-               action = 1;
+               action = ACTION_QUIT;
                break;
             case SDL_KEYDOWN:
                switch(event.key.keysym.sym)
                {
                   case SDLK_ESCAPE:
-                     action = 1;
+                     action = ACTION_QUIT;
+                     break;
+                  default:
+                     action = ACTION_NONE;
                      break;
                }
          }

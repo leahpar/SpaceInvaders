@@ -13,11 +13,15 @@ class MonsterManager
       MonsterManager();
       virtual ~MonsterManager();
 
+      void resetMonsters();
+
       int play();
       vector<Monster *> getMonsters();
       int getMonstersCount();
       bool playerImpact(SDL_Rect * rect);
       bool bulletImpact(SDL_Rect * rect);
+
+      int getTileType();
 
    protected:
 
@@ -27,6 +31,8 @@ class MonsterManager
       int dirMove;
       bool changeLine;
       vector<Monster *> monsters;
+
+      int tileType;
 
 };
 

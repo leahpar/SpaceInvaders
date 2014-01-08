@@ -4,17 +4,19 @@
 #define WINDOW_TITLE "Space Invaders"
 
 #define PIXEL_SIZE      3
-#define MONSTER_SIZE_H  10
+#define MONSTER_SIZE_H  8
 #define MONSTER_SIZE_W  12
 #define BASE_SIZE       16
 
 #define MONSTER_MARGIN  ((BASE_SIZE-MONSTER_SIZE_W)/2)
 
-#define ARENA_X         (30)
-#define ARENA_Y         (100)
+#define ARENA_X         (10)
+#define ARENA_Y         (50)
 #define ARENA_PADDING   (BASE_SIZE)
 #define ARENA_SIZE_H    (BASE_SIZE*15)
 #define ARENA_SIZE_W    (BASE_SIZE*15)
+#define ARENA_BOTTOM    (ARENA_Y + PIXEL_SIZE*ARENA_SIZE_H)
+#define ARENA_RIGHT     (ARENA_X + PIXEL_SIZE*ARENA_SIZE_W)
 
 #define WINDOW_SIZE_H   ((PIXEL_SIZE * ARENA_SIZE_H)+2*ARENA_Y)
 #define WINDOW_SIZE_W   ((PIXEL_SIZE * ARENA_SIZE_W)+2*ARENA_X)
@@ -27,7 +29,11 @@
 #define NB_MONSTERS_W      12
 #define MONSTER_MOVE_STEP  3
 #define MONSTER_MOVE_LINE  8
-#define BASE_SPEED         1
+#define BASE_SPEED         5
+#define MONSTER_SCORE      10
+#define MONSTER_TYPE1      0
+#define MONSTER_TYPE2      1
+#define MONSTER_TYPE3      2
 
 /**** BULLET ******************************/
 #define BULLET_SIZE_H      4
@@ -35,7 +41,7 @@
 #define BULLET_MOVE_STEP   3
 
 /**** PLAYER ******************************/
-#define PLAYER_MOVE_STEP   4
+#define PLAYER_MOVE_STEP   2
 
 /**** RESSOURCES **************************/
 #define FONT_SIZE 18
@@ -53,14 +59,16 @@
 #define NB_HIGHSCORE 1
 
 /**** USER ACTIONS ************************/
-#define ACTION_NONE        -1
-#define ACTION_QUIT        99
-#define ACTION_PAUSE       98
-#define ACTION_OVER        97
-#define ACTION_MOVE_UP      0
-#define ACTION_MOVE_DOWN    1
-#define ACTION_MOVE_LEFT    2
-#define ACTION_MOVE_RIGHT   3
-#define ACTION_SHOT         4
+#define ACTION_NONE          -1
+#define ACTION_QUIT          99
+#define ACTION_PAUSE         98
+#define ACTION_OVER          97
+#define ACTION_MOVE_UP        0
+#define ACTION_MOVE_DOWN      1
+#define ACTION_MOVE_LEFT      2
+#define ACTION_MOVE_RIGHT     3
+#define ACTION_SHOT           4
+#define ACTION_STOP           5
+#define ACTION_BULLET         6
 
 #endif // CONFIG_H_INCLUDED

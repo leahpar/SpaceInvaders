@@ -11,13 +11,14 @@ MonsterManager::MonsterManager()
 
    this->dirMove = RIGHT;
    this->changeLine = false;
+   this->tileType = 0;
 
    // create monsters
    for (y=0; y<NB_MONSTERS_H; y++)
    {
       for (x=0; x<NB_MONSTERS_W; x++)
       {
-         this->monsters.push_back(new Monster(x, y));
+         this->monsters.push_back(new Monster(x, y, (2*y)%3));
       }
    }
 }
@@ -30,9 +31,19 @@ MonsterManager::~MonsterManager()
    }
 }
 
+void MonsterManager::resetMonsters()
+{
+   // create monsters
+   for (auto &m : this->monsters)
+   {
+      m->resetLine();
+   }
+}
+
 int MonsterManager::play()
 {
    bool limit = false;
+   this->tileType = !this->tileType;
 
    // change line
    if (this->changeLine)
@@ -99,3 +110,9 @@ bool MonsterManager::bulletImpact(SDL_Rect * rect)
 
    return false;
 }
+
+int MonsterManager::getTileType()
+{
+   return this->tileType;
+}
+

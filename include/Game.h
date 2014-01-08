@@ -11,6 +11,28 @@
 #include "MonsterManager.h"
 #include "Bullet.h"
 
+#define SDL_MAX_KEY 1000
+
+// http://wiki.libsdl.org/SDLKeycodeLookup
+// 0x40000000 + 0x00000200 = 0x3FFFFE39
+#define SDL_KEY_CONVERT(k) (k > 0x40000000 ? k - 0x3FFFFF39 : k)
+
+#define KEY_QUIT 999
+
+#define KEY_LSHIFT   SDL_KEY_CONVERT(SDLK_LSHIFT)
+#define KEY_RSHIFT   SDL_KEY_CONVERT(SDLK_RSHIFT)
+#define KEY_LCTRL    SDL_KEY_CONVERT(SDLK_LCTRL)
+#define KEY_RCTRL    SDL_KEY_CONVERT(SDLK_RCTRL)
+#define KEY_RSHIFT   SDL_KEY_CONVERT(SDLK_RSHIFT)
+#define KEY_ESCAPE   SDL_KEY_CONVERT(SDLK_ESCAPE)
+#define KEY_ENTER    SDL_KEY_CONVERT(SDLK_RETURN)
+#define KEY_TAB      SDL_KEY_CONVERT(SDLK_TAB)
+#define KEY_PAUSE    SDL_KEY_CONVERT(SDLK_p)
+#define KEY_UP       SDL_KEY_CONVERT(SDLK_UP)
+#define KEY_DOWN     SDL_KEY_CONVERT(SDLK_DOWN)
+#define KEY_LEFT     SDL_KEY_CONVERT(SDLK_LEFT)
+#define KEY_RIGHT    SDL_KEY_CONVERT(SDLK_RIGHT)
+#define KEY_SPACE    SDL_KEY_CONVERT(SDLK_SPACE)
 
 using namespace std;
 
@@ -46,24 +68,30 @@ class Game
       //void initSDL_Mixer();
       //void loadTextures();
 
-      // get player's keyboard action
-      int getAction();
-
       // player
       Player * player;
-      Bullet * bullet;
       MonsterManager * monsters;
 
       void display();      // main display function
       void displayScore(); // display scores
       void displayText(string str, int x, int y); // display a text
-      void drawMonster(Monster * monster);
-      void drawPlayer();
+      void drawMonster(Monster * monster, int tileType);
+      void drawPlayer(SDL_Rect playerRect);
       void drawBullet();
 
       // Pause game
       int actionPause(string str);
       string pauseStr;
+
+      // UI
+      int  pauseGame;
+      char key[SDL_MAX_KEY];
+      void UIgetAction();
+      int  UIHandleAction();
+
+      // game
+      int level;
+
 
 };
 

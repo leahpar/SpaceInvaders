@@ -3,10 +3,12 @@
 
 #include <SDL2/SDL.h>
 
+#include "Config.h"
+
 class Monster
 {
    public:
-      Monster(int x, int y);
+      Monster(int x, int y, int type);
       virtual ~Monster();
 
       SDL_Rect& getRect();
@@ -15,12 +17,19 @@ class Monster
 
       bool moveStep(int dir);
       bool moveLine();
+      void resetLine();
+
+      char * getTile(int tileType);
 
    protected:
 
 
    private:
-      SDL_Rect    rect;
+      SDL_Rect rect;
+      int yInit;
+
+      char TileA[MONSTER_SIZE_H*MONSTER_SIZE_W +1];
+      char TileB[MONSTER_SIZE_H*MONSTER_SIZE_W +1];
 
 };
 

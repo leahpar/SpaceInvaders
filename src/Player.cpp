@@ -8,13 +8,8 @@
 
 Player::Player()
 {
-   this->rect.w = MONSTER_SIZE_W;
-   this->rect.h = MONSTER_SIZE_H;
-   this->rect.x = ARENA_SIZE_W/2-BASE_SIZE/2;
-   this->rect.y = ARENA_SIZE_H-BASE_SIZE;
-
-   this->alive = true;
-   this->bullet = nullptr;
+   this->lives  = 3;
+   this->init();
 }
 
 Player::~Player()
@@ -22,22 +17,21 @@ Player::~Player()
    delete bullet;
 }
 
+void Player::init()
+{
+   this->rect.w = MONSTER_SIZE_W;
+   this->rect.h = MONSTER_SIZE_H;
+   this->rect.x = ARENA_SIZE_W/2-BASE_SIZE/2;
+   this->rect.y = ARENA_SIZE_H-BASE_SIZE;
+
+   this->bullet = nullptr;
+}
 
 /*****************************************************************************/
 /* do stuff... */
 /*****************************************************************************/
 int Player::play(int action)
 {
-   // move bullet
-   if (this->bullet != nullptr)
-   {
-      this->bullet->moveStep();
-      if (this->bullet->rect.y <= 0)
-      {
-         this->destroyBullet();
-      }
-   }
-
    switch (action)
    {
       case ACTION_MOVE_UP:
@@ -63,18 +57,34 @@ int Player::play(int action)
                                       this->rect.y - BULLET_SIZE_H/2);
          }
          break;
+      case ACTION_BULLET:
+         // move bullet
+         if (this->bullet != nullptr)
+         {
+            this->bullet->moveStep();
+            if (this->bullet->rect.y <= 0)
+            {
+               this->destroyBullet();
+            }
+         }
+         break;
    }
    return 0;
 }
 
 bool Player::isAlive()
 {
-   return this->alive;
+   return (this->lives > 0);
 }
 
 void Player::kill()
 {
-   this->alive = false;
+   this->lives--;
+}
+
+int Player::getLives()
+{
+   return this->lives-1;
 }
 
 SDL_Rect& Player::getRect()
@@ -95,13 +105,19 @@ bool Player::hasBullet()
 {
    return (this->bullet != nullptr);
 }
-void Player::bulletHitTarget()
+void Player::bulletHitTarget(int score)
 {
    this->destroyBullet();
+   this->score += score;
 }
 
 void Player::destroyBullet()
 {
    delete this->bullet;
    this->bullet = nullptr;
+}
+
+int Player::getScore()
+{
+   return this->score;
 }
